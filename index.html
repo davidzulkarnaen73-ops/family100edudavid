@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EDU FAMILY 100 SHOWDOWN - Pendidikan Pancasila Kelas 6</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Canvas Confetti CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at center, #1e1b4b 0%, #0f172a 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+            user-select: none;
+        }
+
+        .font-fredoka {
+            font-family: 'Fredoka', cursive;
+        }
+
+        /* 3D Card Flip Animation */
+        .card-perspective {
+            perspective: 1000px;
+        }
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+        .card-inner.flipped {
+            transform: rotateX(180deg);
+        }
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            border-radius: 0.75rem;
+        }
+        .card-front {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 2px solid #3b82f6;
+            box-shadow: inset 0 0 15px rgba(59, 130, 246, 0.3), 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+        }
+        .card-back {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+            border: 2px solid #60a5fa;
+            box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.2), 0 4px 10px rgba(37, 99, 235, 0.5);
+            transform: rotateX(180deg);
+        }
+
+        /* Glowing Effects */
+        .glow-title {
+            text-shadow: 0 0 20px rgba(234, 179, 8, 0.6), 0 0 40px rgba(234, 179, 8, 0.2);
+        }
+        .glow-box {
+            box-shadow: 0 0 25px rgba(59, 130, 246, 0.4);
+        }
+        .glow-active {
+            box-shadow: 0 0 30px rgba(34, 197, 94, 0.6);
+            border-color: #22c55e !important;
+        }
+
+        /* Strike Animation Overlay */
+        @keyframes strikePop {
+            0% { transform: scale(0.2); opacity: 0; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-strike {
+            animation: strikePop 0.3s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen overflow-x-hidden">
+
+    <!-- HEADER BAR -->
+    <header class="w-full bg-slate-900/80 backdrop-blur-md border-b border-indigo-500/30 px-4 py-3 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <span class="bg-amber-500 text-slate-950 font-bold px-2.5 py-1 rounded-md text-xs sm:text-sm tracking-wider uppercase font-fredoka">SD KELAS 6</span>
+                <h1 class="text-lg sm:text-2xl font-black tracking-wide text-amber-400 font-fredoka glow-title">
+                    EDU FAMILY 100 SHOWDOWN
+                </h1>
+            </div>
+            <div class="flex items-center space-x-2 sm:space-x-4">
+                <span class="text-xs sm:text-sm bg-indigo-900/60 text-indigo-200 border border-indigo-500/40 px-3 py-1 rounded-full hidden md:inline-block">
+                    📘 Pendidikan Pancasila
+                </span>
+                <button id="btnSoundToggle" onclick="toggleAudio()" class="bg-slate-800 hover:bg-slate-700 text-amber-400 p-2 rounded-lg border border-slate-700 transition">
+                    🔊 <span id="soundStatus" class="text-xs font-semibold">ON</span>
+                </button>
+                <button onclick="confirmReset()" class="bg-rose-900/50 hover:bg-rose-800 text-rose-200 text-xs px-3 py-2 rounded-lg border border-rose-500/40 transition">
+                    🔄 Reset Game
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto p-3 sm:p-6 flex flex-col justify-between">
+
+        <!-- SETUP SCREEN (NAMA TIM) -->
+        <section id="screenSetup" class="my-auto py-10 max-w-2xl mx-auto w-full bg-slate-900/90 border border-indigo-500/30 rounded-2xl p-6 sm:p-10 shadow-2xl backdrop-blur-md text-center">
+            <div class="inline-block bg-amber-500/20 text-amber-300 font-bold px-4 py-1.5 rounded-full text-xs uppercase tracking-widest mb-4 border border-amber-500/40">
+                Pendidikan Pancasila - Keterkaitan Sila & Nilai Sehari-hari
+            </div>
+            <h2 class="text-3xl sm:text-5xl font-black text-white font-fredoka mb-3">
+                FAMILY 100 <span class="text-amber-400">PANCASILA</span>
+            </h2>
+            <p class="text-slate-300 text-sm sm:text-base mb-8">
+                Uji pemahaman dan kekompakan siswa dalam mengamalkan nilai-nilai Pancasila secara utuh dan menyenangkan!
+            </p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8 text-left">
+                <div class="bg-slate-800/80 p-4 rounded-xl border border-blue-500/40">
+                    <label class="block text-xs font-bold text-blue-400 uppercase mb-2">Nama Tim A (Kiri)</label>
+                    <input type="text" id="inputTeamA" value="Tim Garuda" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white font-bold focus:outline-none focus:border-blue-400">
+                </div>
+                <div class="bg-slate-800/80 p-4 rounded-xl border border-red-500/40">
+                    <label class="block text-xs font-bold text-red-400 uppercase mb-2">Nama Tim B (Kanan)</label>
+                    <input type="text" id="inputTeamB" value="Tim Rajawali" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white font-bold focus:outline-none focus:border-red-400">
+                </div>
+            </div>
+
+            <button onclick="startGame()" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xl py-4 rounded-xl shadow-lg transition transform hover:-translate-y-0.5 font-fredoka tracking-wide">
+                🚀 MULAI PERMAINAN
+            </button>
+        </section>
+
+        <!-- GAMEPLAY DASHBOARD -->
+        <section id="screenGame" class="hidden flex-col gap-4">
+
+            <!-- SCOREBOARD BAR -->
+            <div class="grid grid-cols-12 gap-2 sm:gap-4 items-center">
+                <!-- TIM A CARD -->
+                <div id="cardTeamA" onclick="setTurn('A')" class="col-span-5 sm:col-span-4 bg-slate-900/90 border-2 border-blue-500/50 rounded-xl p-3 sm:p-4 transition cursor-pointer flex flex-col justify-between">
+                    <div class="flex justify-between items-center mb-1">
+                        <span id="nameTeamADisplay" class="font-bold text-blue-400 text-sm sm:text-lg truncate">Tim Garuda</span>
+                        <span id="turnIndicatorA" class="bg-blue-500 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded uppercase hidden">GILIRAN</span>
+                    </div>
+                    <div class="flex items-baseline justify-between">
+                        <span class="text-xs text-slate-400">Total Poin</span>
+                        <span id="scoreTeamA" class="text-2xl sm:text-4xl font-black text-white font-fredoka">0</span>
+                    </div>
+                </div>
+
+                <!-- ROUND INFO & CURRENT POIN -->
+                <div class="col-span-2 sm:col-span-4 text-center bg-slate-900/80 border border-amber-500/30 rounded-xl p-2 sm:p-3 flex flex-col justify-center items-center">
+                    <span id="roundBadge" class="bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full uppercase mb-1">
+                        RONDE 1 / 20
+                    </span>
+                    <span class="text-[10px] sm:text-xs text-slate-400 uppercase font-semibold">Poin Ronde Ini</span>
+                    <span id="currentRoundPoints" class="text-2xl sm:text-4xl font-black text-amber-400 font-fredoka">0</span>
+                </div>
+
+                <!-- TIM B CARD -->
+                <div id="cardTeamB" onclick="setTurn('B')" class="col-span-5 sm:col-span-4 bg-slate-900/90 border-2 border-red-500/50 rounded-xl p-3 sm:p-4 transition cursor-pointer flex flex-col justify-between text-right">
+                    <div class="flex justify-between items-center mb-1 flex-row-reverse">
+                        <span id="nameTeamBDisplay" class="font-bold text-red-400 text-sm sm:text-lg truncate">Tim Rajawali</span>
+                        <span id="turnIndicatorB" class="bg-red-500 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded uppercase hidden">GILIRAN</span>
+                    </div>
+                    <div class="flex items-baseline justify-between flex-row-reverse">
+                        <span class="text-xs text-slate-400">Total Poin</span>
+                        <span id="scoreTeamB" class="text-2xl sm:text-4xl font-black text-white font-fredoka">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PERTANYAAN CARD -->
+            <div class="bg-gradient-to-r from-indigo-900/80 via-slate-900/90 to-indigo-900/80 border border-indigo-500/40 rounded-xl p-4 sm:p-6 text-center shadow-lg">
+                <span class="text-xs font-bold text-indigo-300 uppercase tracking-widest mb-1 block">Pertanyaan Survei Kelas 6</span>
+                <h3 id="questionText" class="text-base sm:text-2xl font-bold text-white leading-relaxed">
+                    Loading pertanyaan...
+                </h3>
+            </div>
+
+            <!-- SURVEY BOARD (FAMILY 100 BOARD - 5 CARDS) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 my-2" id="surveyBoard">
+                <!-- Slot 1 -->
+                <div class="card-perspective h-14 sm:h-16">
+                    <div id="card-0" class="card-inner">
+                        <div class="card-front px-4 justify-between font-fredoka text-xl text-blue-400 font-bold">
+                            <span>JAWABAN 1</span>
+                            <span class="w-8 h-8 rounded-full bg-slate-800 border border-blue-500/50 flex items-center justify-center text-sm text-white">1</span>
+                        </div>
+                        <div class="card-back px-4 justify-between font-bold text-white">
+                            <span id="ans-text-0" class="truncate text-sm sm:text-base pr-2">---</span>
+                            <span id="ans-pts-0" class="bg-amber-400 text-slate-950 px-2.5 py-1 rounded font-fredoka text-sm sm:text-base">0</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Slot 2 -->
+                <div class="card-perspective h-14 sm:h-16">
+                    <div id="card-1" class="card-inner">
+                        <div class="card-front px-4 justify-between font-fredoka text-xl text-blue-400 font-bold">
+                            <span>JAWABAN 2</span>
+                            <span class="w-8 h-8 rounded-full bg-slate-800 border border-blue-500/50 flex items-center justify-center text-sm text-white">2</span>
+                        </div>
+                        <div class="card-back px-4 justify-between font-bold text-white">
+                            <span id="ans-text-1" class="truncate text-sm sm:text-base pr-2">---</span>
+                            <span id="ans-pts-1" class="bg-amber-400 text-slate-950 px-2.5 py-1 rounded font-fredoka text-sm sm:text-base">0</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Slot 3 -->
+                <div class="card-perspective h-14 sm:h-16">
+                    <div id="card-2" class="card-inner">
+                        <div class="card-front px-4 justify-between font-fredoka text-xl text-blue-400 font-bold">
+                            <span>JAWABAN 3</span>
+                            <span class="w-8 h-8 rounded-full bg-slate-800 border border-blue-500/50 flex items-center justify-center text-sm text-white">3</span>
+                        </div>
+                        <div class="card-back px-4 justify-between font-bold text-white">
+                            <span id="ans-text-2" class="truncate text-sm sm:text-base pr-2">---</span>
+                            <span id="ans-pts-2" class="bg-amber-400 text-slate-950 px-2.5 py-1 rounded font-fredoka text-sm sm:text-base">0</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Slot 4 -->
+                <div class="card-perspective h-14 sm:h-16">
+                    <div id="card-3" class="card-inner">
+                        <div class="card-front px-4 justify-between font-fredoka text-xl text-blue-400 font-bold">
+                            <span>JAWABAN 4</span>
+                            <span class="w-8 h-8 rounded-full bg-slate-800 border border-blue-500/50 flex items-center justify-center text-sm text-white">4</span>
+                        </div>
+                        <div class="card-back px-4 justify-between font-bold text-white">
+                            <span id="ans-text-3" class="truncate text-sm sm:text-base pr-2">---</span>
+                            <span id="ans-pts-3" class="bg-amber-400 text-slate-950 px-2.5 py-1 rounded font-fredoka text-sm sm:text-base">0</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Slot 5 -->
+                <div class="card-perspective h-14 sm:h-16 sm:col-span-2">
+                    <div id="card-4" class="card-inner">
+                        <div class="card-front px-4 justify-between font-fredoka text-xl text-blue-400 font-bold">
+                            <span>JAWABAN 5</span>
+                            <span class="w-8 h-8 rounded-full bg-slate-800 border border-blue-500/50 flex items-center justify-center text-sm text-white">5</span>
+                        </div>
+                        <div class="card-back px-4 justify-between font-bold text-white">
+                            <span id="ans-text-4" class="truncate text-sm sm:text-base pr-2">---</span>
+                            <span id="ans-pts-4" class="bg-amber-400 text-slate-950 px-2.5 py-1 rounded font-fredoka text-sm sm:text-base">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INPUT & CONTROL PANEL -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col gap-3">
+                <form id="formAnswer" onsubmit="handleAnswerSubmit(event)" class="flex gap-2">
+                    <input type="text" id="inputAnswer" placeholder="Ketikkan jawaban siswa di sini (misal: Berdoa sebelum belajar)..." autocomplete="off" class="flex-grow bg-slate-950 border border-indigo-500/50 rounded-lg px-4 py-3 text-white text-sm sm:text-base focus:outline-none focus:border-amber-400 transition">
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-5 py-3 rounded-lg text-sm sm:text-base transition flex items-center gap-1 font-fredoka">
+                        <span>CEK</span> 🔍
+                    </button>
+                </form>
+
+                <div class="flex flex-wrap items-center justify-between gap-2 border-t border-slate-800 pt-3">
+                    <!-- STRIKE COUNTER -->
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-slate-400 font-bold uppercase">Strike (Salah):</span>
+                        <div class="flex gap-1">
+                            <span id="strike-1" class="w-8 h-8 rounded bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-600 font-black text-lg">X</span>
+                            <span id="strike-2" class="w-8 h-8 rounded bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-600 font-black text-lg">X</span>
+                            <span id="strike-3" class="w-8 h-8 rounded bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-600 font-black text-lg">X</span>
+                        </div>
+                        <button onclick="addManualStrike()" class="bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-800 text-xs px-2.5 py-1.5 rounded font-bold transition ml-2">
+                            + Manual Strike (Tetot)
+                        </button>
+                    </div>
+
+                    <!-- ROUND CONTROL BUTTONS -->
+                    <div class="flex items-center gap-2">
+                        <button onclick="passTurn()" class="bg-purple-900/60 hover:bg-purple-800 text-purple-200 border border-purple-500/40 text-xs px-3 py-2 rounded-lg font-bold transition">
+                            🔄 Over Giliran
+                        </button>
+                        <button onclick="revealAllAnswers()" class="bg-amber-900/60 hover:bg-amber-800 text-amber-200 border border-amber-500/40 text-xs px-3 py-2 rounded-lg font-bold transition">
+                            👁️ Buka Semua
+                        </button>
+                        <button onclick="awardRoundPoints()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm px-4 py-2 rounded-lg font-bold transition font-fredoka">
+                            🏆 Selesaikan Ronde
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- FINAL WINNER SCREEN -->
+        <section id="screenFinal" class="hidden my-auto py-10 max-w-2xl mx-auto w-full bg-slate-900/90 border border-amber-500/40 rounded-2xl p-6 sm:p-10 shadow-2xl backdrop-blur-md text-center">
+            <div class="text-5xl mb-3">🏆</div>
+            <span class="bg-amber-500/20 text-amber-300 text-xs font-bold px-3 py-1 rounded-full uppercase border border-amber-500/40">PERMAINAN SELESAI</span>
+            <h2 class="text-3xl sm:text-5xl font-black text-white font-fredoka my-3">
+                PEMENANG SHOWDOWN!
+            </h2>
+            <p id="winnerText" class="text-2xl font-bold text-amber-400 font-fredoka mb-6">---</p>
+
+            <div class="grid grid-cols-2 gap-4 mb-8">
+                <div class="bg-slate-800/80 p-4 rounded-xl border border-blue-500/40">
+                    <span id="finalTeamAName" class="text-sm font-bold text-blue-400 block mb-1">Tim A</span>
+                    <span id="finalTeamAScore" class="text-3xl font-black text-white font-fredoka">0</span>
+                </div>
+                <div class="bg-slate-800/80 p-4 rounded-xl border border-red-500/40">
+                    <span id="finalTeamBName" class="text-sm font-bold text-red-400 block mb-1">Tim B</span>
+                    <span id="finalTeamBScore" class="text-3xl font-black text-white font-fredoka">0</span>
+                </div>
+            </div>
+
+            <button onclick="restartGame()" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xl py-4 rounded-xl shadow-lg transition font-fredoka">
+                🔄 MAIN LAGI DARI awal
+            </button>
+        </section>
+
+    </main>
+
+    <!-- STRIKE OVERLAY -->
+    <div id="overlayStrike" class="fixed inset-0 bg-slate-950/80 z-50 flex items-center justify-center pointer-events-none opacity-0 transition-opacity duration-200">
+        <div class="bg-rose-600 text-white font-black text-8xl sm:text-9xl px-12 py-6 rounded-3xl border-8 border-white shadow-2xl animate-strike">
+            ❌
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. AUDIO SYNTHESIZER ENGINE (Web Audio API)
+        // ==========================================
+        const AudioEngine = {
+            ctx: null,
+            muted: false,
+
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            },
+
+            playCorrect() {
+                if (this.muted) return;
+                this.init();
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.exponentialRampToValueAtTime(880, now + 0.15); // A5
+
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.3);
+            },
+
+            playWrong() {
+                if (this.muted) return;
+                this.init();
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.linearRampToValueAtTime(60, now + 0.4);
+
+                gain.gain.setValueAtTime(0.4, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.4);
+            },
+
+            playFlip() {
+                if (this.muted) return;
+                this.init();
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.exponentialRampToValueAtTime(600, now + 0.1);
+
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.1);
+            },
+
+            playVictory() {
+                if (this.muted) return;
+                this.init();
+                const notes = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99];
+                notes.forEach((freq, index) => {
+                    setTimeout(() => {
+                        const now = this.ctx.currentTime;
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq, now);
+                        gain.gain.setValueAtTime(0.2, now);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        osc.start(now);
+                        osc.stop(now + 0.4);
+                    }, index * 100);
+                });
+            }
+        };
+
+        function toggleAudio() {
+            AudioEngine.muted = !AudioEngine.muted;
+            document.getElementById('soundStatus').innerText = AudioEngine.muted ? 'OFF' : 'ON';
+        }
+
+        // ==========================================
+        // 2. BANK SOAL (20 RONDE PENDIDIKAN PANCASILA KELAS 6)
+        // ==========================================
+        const bankSoal = [
+            {
+                pertanyaan: "Sebutkan contoh pengamalan Sila Ke-1 Pancasila (Ketuhanan Yang Maha Esa) yang sering dilakukan siswa di sekolah!",
+                jawaban: [
+                    { teks: "Berdoa sebelum dan sesudah belajar", poin: 100, keywords: ["berdoa", "doa", "baca doa", "berdo'a", "minta doa"] },
+                    { teks: "Menghormati teman berbeda agama", poin: 80, keywords: ["menghormati", "hormat", "beda agama", "toleransi", "hargai agama"] },
+                    { teks: "Menjalankan ibadah di sekolah", poin: 60, keywords: ["ibadah", "sholat", "shalat", "sembahyang", "jumatan"] },
+                    { teks: "Menjaga kebersihan tempat ibadah", poin: 40, keywords: ["kebersihan", "mushola", "masjid", "bersih tempat ibadah"] },
+                    { teks: "Tidak memaksakan agama kepada teman", poin: 20, keywords: ["tidak memaksa", "bebas agama", "jangan paksa"] }
+                ]
+            },
+            {
+                pertanyaan: "Sebutkan tindakan di kelas yang mencerminkan Sila Ke-2 Pancasila (Kemanusiaan yang Adil dan Beradab)!",
+                jawaban: [
+                    { teks: "Menolong teman yang kesusahan", poin: 100, keywords: ["menolong", "bantu", "tolong", "kesusahan", "jatuh"] },
+                    { teks: "Menjenguk teman kelas yang sakit", poin: 80, keywords: ["jenguk", "sakit", "menengok", "kunjungi teman"] },
+                    { teks: "Tidak mengejek atau membully teman", poin: 60, keywords: ["tidak mengejek", "membully", "bully", "tidak hina", "sopan"] },
+                    { teks: "Bersikap sopan dan santun kepada guru", poin: 40, keywords: ["sopan", "santun", "hormat guru", "salam"] },
+                    { teks: "Membagi bekal makanan kepada teman", poin: 20, keywords: ["berbagi", "makanan", "bekal", "kasih makanan"] }
+                ]
+            },
+            {
+                pertanyaan: "Sebutkan kegiatan di sekolah yang menunjukkan pengamalan Sila Ke-3 Pancasila (Persatuan Indonesia)!",
+                jawaban: [
+                    { teks: "Mengikuti upacara bendera dengan tertib", poin: 100, keywords: ["upacara", "bendera", "upacara bendera", "senin"] },
+                    { teks: "Kerja bakti membersihkan lingkungan sekolah", poin: 80, keywords: ["kerja bakti", "gotong royong", "piket", "kebersihan"] },
+                    { teks: "Berteman tanpa membeda-bedakan suku", poin: 60, keywords: ["berteman", "tidak bedakan", "suku", "ras", "bersatu"] },
+                    { teks: "Bangga memakai produk buatan Indonesia", poin: 40, keywords: ["batik", "produk lokal", "buatan indonesia", "cinta tanah air"] },
+                    { teks: "Menyanyikan lagu nasional bersama-sama", poin: 20, keywords: ["lagu nasional", "lagu daerah", "menyanyi", "indonesia raya"] }
+                ]
+            },
+            {
+                pertanyaan: "Sebutkan contoh penerapan Sila Ke-4 Pancasila saat melakukan kegiatan di kelas!",
+                jawaban: [
+                    { teks: "Bermusyawarah memilih ketua kelas", poin: 100, keywords: ["musyawarah", "ketua kelas", "pemilihan", "voting"] },
+                    { teks: "Menghargai dan mendengarkan pendapat teman", poin: 80, keywords: ["hargai pendapat", "mendengarkan", "dengar pendapat", "saran"] },
+                    { teks: "Menerima keputusan bersama dengan lapang dada", poin: 60, keywords: ["terima keputusan", "lapang dada", "mufakat", "setuju"] },
+                    { teks: "Tidak memaksakan kehendak sendiri", poin: 40, keywords: ["tidak memaksa", "kehendak", "egois", "kemauan"] },
+                    { teks: "Berani menyampaikan usul secara santun", poin: 20, keywords: ["menyampaikan pendapat", "usul", "saran", "bicara"] }
+                ]
+            },
+            {
+                pertanyaan: "Sebutkan sikap adil yang sesuai Sila Ke-5 Pancasila (Keadilan Sosial) di kehidupan sehari-hari!",
+                jawaban: [
+                    { teks: "Bersikap adil dan tidak pilih kasih", poin: 100, keywords: ["pilih kasih", "adil", "tidak pilih teman", "sama rata"] },
+                    { teks: "Menghargai hasil karya orang lain", poin: 80, keywords: ["hargai karya", "puji teman", "apresiasi", "karya"] },
+                    { teks: "Suka menabung dan tidak boros", poin: 60, keywords: ["hemat", "menabung", "tidak boros", "jajan secukupnya"] },
+                    { teks: "Menjalankan kewajiban sebelum menuntut hak", poin: 40, keywords: ["kewajiban", "hak", "tugas", "disiplin"] },
+                    { teks: "Suka membantu orang lain yang membutuhkan", poin: 20, keywords: ["membantu", "donor", "sedekah", "donasi"] }
+                ]
+            },
+            {
+                pertanyaan: "Apa hubungan erat antara Sila Ke-1 (Ketuhanan) dan Sila Ke-2 (Kemanusiaan)?",
+                jawaban: [
+                    { teks: "Menyayangi sesama karena perintah Tuhan", poin: 100, keywords: ["perintah tuhan", "sayang sesama", "kasih tuhan", "ibadah"] },
+                    { teks: "Menghormati manusia sebagai ciptaan Tuhan", poin: 80, keywords: ["ciptaan tuhan", "makhluk tuhan", "manusia ciptaan"] },
+                    { teks: "Toleransi beragama adalah wujud adab", poin: 60, keywords: ["toleransi", "adab", "akhlak", "budi pekerti"] },
+                    { teks: "Saling mendoakan kebaikan antar sesama", poin: 40, keywords: ["mendoakan", "doa baik", "saling mendoakan"] },
+                    { teks: "Tidak menyakiti sesama makhluk hidup", poin: 20, keywords: ["tidak menyakiti", "kasih sayang", "ramah"] }
+                ]
+            },
+            {
+                pertanyaan: "Sebutkan contoh kegiatan yang mencerminkan Sila Ke-2 (Kemanusiaan) sekaligus Sila Ke-3 (Persatuan)!",
+                jawaban: [
+                    { teks: "Gotong royong membantu korban bencana alam", poin: 100, keywords: ["bencana alam", "bantuan bencana", "korban bencana", "donasi"] },
+                    { teks: "Kerja bakti membersihkan lingkungan bersama", poin: 80, keywords: ["kerja bakti", "gotong royong", "kebersihan desa"] },
+                    { teks: "Membantu teman tanpa membedakan suku", poin: 60, keywords: ["tanpa bedakan", "bantu teman", "beda suku"] },
+                    { teks: "Menjaga kerukunan dan kedamaian kelas", poin: 40, keywords: ["kerukunan", "damai", "rukun", "tidak bertengkar"] },
+                    { teks: "Mengadakan bakti sosial sekolah", poin: 20, keywords: ["bakti sosial", "baksos", "berbagi masyarakat"] }
+                ]
+            },
+            {
+                pertanyaan: "Bagaimana cara menjaga persatuan (Sila 3) saat melakukan musyawarah kelas (Sila 4)?",
+                jawaban: [
+                    { teks: "Menggunakan bahasa yang santun dan sopan", poin: 100, keywords: ["bahasa sopan", "santun", "bicara baik", "kata sopan"] },
+                    { teks: "Tidak memotong pembicaraan orang lain", poin: 80, keywords: ["potong bicara", "jangan menyela", "dengar dulu"] },
+                    { teks: "Menghormati perbedaan pendapat", poin: 60, keywords: ["beda pendapat", "hargai beda", "pendapat orang"] },
+                    { teks: "Mengutamakan kepentingan bersama di atas pribadi", poin: 40, keywords: ["kepentingan bersama", "bukan pribadi", "umum"] },
+                    { teks: "Tidak marah saat usulan ditolak", poin: 20, keywords: ["tidak marah", "tidak emosi", "terima lapang dada"] }
+                ]
+            },
+            {
+                pertanyaan: "Sebutkan contoh sikap dalam diskusi kelompok yang mencerminkan Keadilan Sosial (Sila 5)!",
+                jawaban: [
+                    { teks: "Pembagian tugas kelompok secara merata", poin: 100, keywords: ["bagi tugas", "tugas merata", "pembagian kerja"] },
+                    { teks: "Memberikan kesempatan bicara kepada semua anggota", poin: 80, keywords: ["kesempatan bicara", "semua bicara", "giliran"] },
+                    { teks: "Tidak memihak hanya pada teman dekat", poin: 60, keywords: ["tidak memihak", "netral", "objektif", "tidak pilih kasih"] },
+                    { teks: "Melaksanakan tugas kelompok penuh tanggung jawab", poin: 40, keywords: ["tanggung jawab", "kerjakan tugas", "disiplin"] },
+                    { teks: "Menghargai masukan dari anggota paling diam", poin: 20, keywords: ["hargai masukan", "anggota diam", "dengar semua"] }
+                ]
+            },
+            {
+                pertanyaan: "Mengapa sila-sila dalam Pancasila merupakan satu kesatuan yang utuh dan tidak dapat dipisahkan?",
+                jawaban: [
+                    { teks: "Setiap sila saling melengkapi dan menjiwai", poin: 100, keywords: ["saling melengkapi", "menjiwai", "saling terkait"] },
+                    { teks: "Pancasila adalah dasar negara yang bulat", poin: 80, keywords: ["dasar negara", "bulat", "satu kesatuan"] },
+                    { teks: "Mengabaikan satu sila merusak nilai sila lainnya", poin: 60, keywords: ["merusak nilai", "hilang makna", "tidak seimbang"] },
+                    { teks: "Pedoman hidup bangsa yang menyeluruh", poin: 40, keywords: ["pedoman hidup", "pandangan hidup", "menyeluruh"] },
+                    { teks: "Mewujudkan tujuan nasional bersama", poin: 20, keywords: ["tujuan bersama", "cita-cita bangsa", "indonesia maju"] }
+                ]
+            },
+            {
+                pertanyaan: "Sebutkan contoh pengamalan Pancasila yang dapat kita lakukan bersama keluarga di rumah!",
+                jawaban: [
+                    { teks: "Berdoa dan ibadah bersama keluarga", poin: 100, keywords: ["doa keluarga", "ibadah bersama", "sholat jamaah"] },
+                    { teks: "Membantu orang tua membersihkan rumah", poin: 80, keywords: ["bantu orang tua", "sapu rumah", "bereskan rumah"] },
+                    { teks: "Musyawarah menentukan tempat liburan keluarga", poin: 60, keywords: ["musyawarah keluarga", "diskusi rumah", "liburan"] },
+                    { teks: "Menghormati orang tua dan menyayangi adik", poin: 40, keywords: ["hormat orang tua", "sayang adik", "patuh"] },
+                    { teks: "Membagi makanan secara adil di rumah", poin: 20, keywords: ["bagi makanan", "adil di rumah", "berbagi kue"] }
+                ]
+            },
+            {
+                pertanyaan: "Sebutkan contoh kegiatan warga masyarakat yang mencerminkan nilai-nilai Pancasila!",
+                jawaban: [
+                    { teks: "Kerja bakti membersihkan desa atau selokan", poin: 100, keywords: ["kerja bakti", "bersih desa", "gotong royong"] },
+                    { teks: "Ikut ronda malam atau siskamling", poin: 80, keywords: ["ronda", "siskamling", "jaga malam", "keamanan"] },
+                    { teks: "Musyawarah RT atau RW", poin: 60, keywords: ["musyawarah rt", "rapat rw", "rembug desa"] },
+                    { teks: "Saling menjenguk tetangga yang sakit", poin: 40, keywords: ["jenguk tetangga", "tetangga sakit", "besuk"] },
+                    { teks: "Menjaga toleransi antar pemeluk agama", poin: 20, keywords: ["toleransi warga", "rukun tetangga", "hargai agama"] }
+                ]
+            },
+            {
+                pertanyaan: "Sebutkan wujud rasa cinta tanah air (Sila Ke-3) bagi seorang siswa SD kelas 6!",
+                jawaban: [
+                    { teks: "Belajar giat untuk meraih cita-cita", poin: 100, keywords: ["belajar giat", "rajin belajar", "tekun", "prestasi"] },
+                    { teks: "Bangga menggunakan Bahasa Indonesia yang baik", poin: 80, keywords: ["bahasa indonesia", "bicara indonesia", "bahasa persatuan"] },
+                    { teks: "Menyukai makanan dan produk lokal Indonesia", poin: 60, keywords: ["produk lokal", "makanan tradisional", "jajanan pasar"] },
+                    { teks: "Menjaga nama baik sekolah dan bangsa", poin: 40, keywords: ["nama baik", "harumkan nama", "jaga sikap"] },
+                    { teks: "Lestari tarian dan kebudayaan daerah", poin: 20, keywords: ["tarian daerah", "budaya lokal", "alat musik daerah"] }
+                ]
+            },
+            {
+                pertanyaan: "Sebutkan ciri-ciri keputusan musyawarah yang sesuai dengan nilai Sila Ke-4 Pancasila!",
+                jawaban: [
+                    { teks: "Diambil berdasarkan kesepakatan bersama", poin: 100, keywords: ["mufakat", "kesepakatan", "setuju semua"] },
+                    { teks: "Mengutamakan kepentingan bersama di atas pribadi", poin: 80, keywords: ["kepentingan umum", "bersama", "tidak egois"] },
+                    { teks: "Dilaksanakan dengan rasa tanggung jawab", poin: 60, keywords: ["tanggung jawab", "dijalankan", "komitmen"] },
+                    { teks: "Didasarkan pada akal sehat dan hati nurani", poin: 40, keywords: ["akal sehat", "hati nurani", "jujur"] },
+                    { teks: "Tidak merugikan salah satu pihak", poin: 20, keywords: ["tidak merugikan", "win win", "seimbang"] }
+                ]
+            },
+            {
+                pertanyaan: "Sebutkan kewajiban utama siswa di sekolah yang harus dijalankan secara seimbang (Sila Ke-5)!",
+                jawaban: [
+                    { teks: "Menaati peraturan dan tata tertib sekolah", poin: 100, keywords: ["taat aturan", "tata tertib", "disiplin sekolah"] },
+                    { teks: "Mengerjakan tugas dan PR tepat waktu", poin: 80, keywords: ["kerjakan tugas", "pr", "kumpul tugas"] },
+                    { teks: "Menjaga kebersihan dan fasilitas kelas", poin: 60, keywords: ["kebersihan kelas", "jaga barang", "tidak corat coret"] },
+                    { teks: "Hormat kepada guru dan menghargai teman", poin: 40, keywords: ["hormat guru", "hargai teman", "sopan santun"] },
+                    { teks: "Mendengarkan penjelasan guru saat mengajar", poin: 20, keywords: ["dengar guru", "perhatikan guru", "fokus"] }
+                ]
+            },
+            {
+                pertanyaan: "Sebutkan sikap positif saat memiliki teman yang berbeda latar belakang agama atau suku!",
+                jawaban: [
+                    { teks: "Berteman dengan rukun tanpa membeda-bedakan", poin: 100, keywords: ["rukun", "tidak bedakan", "semua teman"] },
+                    { teks: "Menghargai perayaan hari besar agama mereka", poin: 80, keywords: ["hari besar", "ucapan selamat", "hargai agama"] },
+                    { teks: "Berbicara menggunakan bahasa yang santun", poin: 60, keywords: ["bahasa santun", "bicara baik", "ramah"] },
+                    { teks: "Menolong jika mereka mengalami kesulitan", poin: 40, keywords: ["menolong", "bantu teman", "peduli"] },
+                    { teks: "Tidak mengejek kebiasaan unik daerah asal", poin: 20, keywords: ["tidak mengejek", "logat", "kebiasaan"] }
+                ]
+            },
+            {
+                pertanyaan: "Sebutkan keteladanan positif para perumus Pancasila yang harus dipelajari siswa!",
+                jawaban: [
+                    { teks: "Semangat persatuan di atas kepentingan pribadi", poin: 100, keywords: ["semangat persatuan", "cinta bangsa", "utamakan negara"] },
+                    { teks: "Sikap toleransi tinggi terhadap perbedaan pendapat", poin: 80, keywords: ["toleransi", "besar hati", "hargai pendapat"] },
+                    { teks: "Keberanian dan pantang menyerah", poin: 60, keywords: ["pantang menyerah", "berani", "gigih"] },
+                    { teks: "Jiwa besar mau menerima kehendak bersama", poin: 40, keywords: ["jiwa besar", "legowo", "lapang dada"] },
+                    { teks: "Cinta tanah air yang tulus dan ikhlas", poin: 20, keywords: ["cinta tanah air", "patriotis", "rela berkorban"] }
+                ]
+            },
+            {
+                pertanyaan: "Sebutkan karakter utama Profil Pelajar Pancasila yang harus dimiliki siswa SD!",
+                jawaban: [
+                    { teks: "Beriman dan bertakwa kepada Tuhan YME", poin: 100, keywords: ["beriman", "takwa", "akhlak mulia"] },
+                    { teks: "Berkebinekaan global dan menghargai budaya", poin: 80, keywords: ["kebinekaan", "bhinneka", "ragam budaya"] },
+                    { teks: "Gotong royong dan suka bekerja sama", poin: 60, keywords: ["gotong royong", "kerja sama", "bantu teman"] },
+                    { teks: "Mandiri dan bertanggung jawab", poin: 40, keywords: ["mandiri", "tanggung jawab", "percaya diri"] },
+                    { teks: "Bernalar kritis dan kreatif", poin: 20, keywords: ["bernalar kritis", "kreatif", "kritis", "pintar"] }
+                ]
+            },
+            {
+                pertanyaan: "Sebutkan contoh pola hidup hemat dan sederhana yang sesuai dengan Sila Ke-5 Pancasila!",
+                jawaban: [
+                    { teks: "Menabung sebagian dari uang saku", poin: 100, keywords: ["menabung", "celengan", "simpan uang"] },
+                    { teks: "Membeli barang sesuai kebutuhan bukan keinginan", poin: 80, keywords: ["sesuai kebutuhan", "tidak konsumtif", "bukan gengsi"] },
+                    { teks: "Mematikan lampu dan kran air setelah dipakai", poin: 60, keywords: ["hemat listrik", "matikan air", "hemat energi"] },
+                    { teks: "Mengambil makanan secukupnya agar tidak terbuang", poin: 40, keywords: ["makanan secukupnya", "tidak buang makanan", "habiskan makanan"] },
+                    { teks: "Merawat peralatan sekolah agar awet", poin: 20, keywords: ["rawat barang", "jaga pensil", "awet"] }
+                ]
+            },
+            {
+                pertanyaan: "Sebutkan manfaat jika seluruh warga sekolah menerapkan nilai-nilai Pancasila secara utuh!",
+                jawaban: [
+                    { teks: "Tercipta suasana sekolah yang aman dan damai", poin: 100, keywords: ["aman", "damai", "tentram", "sekolah nyaman"] },
+                    { teks: "Terjalin kerukunan dan persaudaraan yang erat", poin: 80, keywords: ["kerukunan", "persaudaraan", "kompak"] },
+                    { teks: "Tidak ada kasus perundungan atau bullying", poin: 60, keywords: ["bebas bully", "tidak perundungan", "aman berteman"] },
+                    { teks: "Prestasi belajar siswa semakin meningkat", poin: 40, keywords: ["prestasi", "belajar lancar", "semangat belajar"] },
+                    { teks: "Sekolah menjadi tempat belajar yang menyenangkan", poin: 20, keywords: ["menyenangkan", "seru", "betah di sekolah"] }
+                ]
+            }
+        ];
+
+        // ==========================================
+        // 3. GAME STATE MANAGEMENT
+        // ==========================================
+        let gameState = {
+            currentRoundIndex: 0,
+            teamA: { name: "Tim Garuda", score: 0 },
+            teamB: { name: "Tim Rajawali", score: 0 },
+            activeTeam: 'A', // 'A' or 'B'
+            currentRoundPoints: 0,
+            revealedAnswers: [false, false, false, false, false],
+            strikes: 0,
+            isRoundOver: false
+        };
+
+        // Initialize Game
+        function startGame() {
+            const nameA = document.getElementById('inputTeamA').value.trim() || "Tim Garuda";
+            const nameB = document.getElementById('inputTeamB').value.trim() || "Tim Rajawali";
+
+            gameState.teamA.name = nameA;
+            gameState.teamB.name = nameB;
+            gameState.teamA.score = 0;
+            gameState.teamB.score = 0;
+            gameState.currentRoundIndex = 0;
+            gameState.activeTeam = 'A';
+
+            document.getElementById('nameTeamADisplay').innerText = nameA;
+            document.getElementById('nameTeamBDisplay').innerText = nameB;
+
+            document.getElementById('screenSetup').classList.add('hidden');
+            document.getElementById('screenGame').classList.remove('hidden');
+            document.getElementById('screenGame').classList.add('flex');
+
+            loadRound(0);
+        }
+
+        function loadRound(index) {
+            if (index >= bankSoal.length) {
+                endGame();
+                return;
+            }
+
+            gameState.currentRoundIndex = index;
+            gameState.currentRoundPoints = 0;
+            gameState.revealedAnswers = [false, false, false, false, false];
+            gameState.strikes = 0;
+            gameState.isRoundOver = false;
+
+            // Update UI Header
+            document.getElementById('roundBadge').innerText = `RONDE ${index + 1} / ${bankSoal.length}`;
+            document.getElementById('currentRoundPoints').innerText = '0';
+            document.getElementById('questionText').innerText = bankSoal[index].pertanyaan;
+
+            // Reset Cards
+            for (let i = 0; i < 5; i++) {
+                const card = document.getElementById(`card-${i}`);
+                card.classList.remove('flipped');
+                document.getElementById(`ans-text-${i}`).innerText = '---';
+                document.getElementById(`ans-pts-${i}`).innerText = '0';
+            }
+
+            // Reset Strikes UI
+            updateStrikesUI();
+            updateTurnUI();
+        }
+
+        function setTurn(team) {
+            gameState.activeTeam = team;
+            updateTurnUI();
+        }
+
+        function passTurn() {
+            gameState.activeTeam = gameState.activeTeam === 'A' ? 'B' : 'A';
+            updateTurnUI();
+            AudioEngine.playFlip();
+        }
+
+        function updateTurnUI() {
+            const cardA = document.getElementById('cardTeamA');
+            const cardB = document.getElementById('cardTeamB');
+            const indA = document.getElementById('turnIndicatorA');
+            const indB = document.getElementById('turnIndicatorB');
+
+            if (gameState.activeTeam === 'A') {
+                cardA.classList.add('glow-active');
+                cardB.classList.remove('glow-active');
+                indA.classList.remove('hidden');
+                indB.classList.add('hidden');
+            } else {
+                cardB.classList.add('glow-active');
+                cardA.classList.remove('glow-active');
+                indB.classList.remove('hidden');
+                indA.classList.add('hidden');
+            }
+
+            document.getElementById('scoreTeamA').innerText = gameState.teamA.score;
+            document.getElementById('scoreTeamB').innerText = gameState.teamB.score;
+        }
+
+        // ==========================================
+        // 4. FUZZY ANSWER CHECKING & SMART MATCHING
+        // ==========================================
+        function normalizeText(text) {
+            return text
+                .toLowerCase()
+                .replace(/[^a-z0-9\s]/g, '')
+                .trim();
+        }
+
+        function checkFuzzyMatch(input, questionData) {
+            const cleanInput = normalizeText(input);
+            if (!cleanInput) return -1;
+
+            const inputTokens = cleanInput.split(/\s+/);
+
+            for (let i = 0; i < questionData.jawaban.length; i++) {
+                if (gameState.revealedAnswers[i]) continue; // Skip already revealed
+
+                const ansItem = questionData.jawaban[i];
+
+                for (let kw of ansItem.keywords) {
+                    const cleanKw = normalizeText(kw);
+
+                    // 1. Exact or Substring match
+                    if (cleanInput === cleanKw || cleanInput.includes(cleanKw) || cleanKw.includes(cleanInput)) {
+                        return i;
+                    }
+
+                    // 2. Token overlap check
+                    const kwTokens = cleanKw.split(/\s+/);
+                    const commonTokens = inputTokens.filter(token => token.length > 2 && kwTokens.includes(token));
+
+                    if (commonTokens.length >= 1 && (kwTokens.length <= 2 || commonTokens.length >= Math.ceil(kwTokens.length * 0.5))) {
+                        return i;
+                    }
+                }
+            }
+            return -1; // No match
+        }
+
+        function handleAnswerSubmit(e) {
+            e.preventDefault();
+            if (gameState.isRoundOver) return;
+
+            const inputEl = document.getElementById('inputAnswer');
+            const userAns = inputEl.value;
+            inputEl.value = '';
+
+            const questionData = bankSoal[gameState.currentRoundIndex];
+            const matchIndex = checkFuzzyMatch(userAns, questionData);
+
+            if (matchIndex !== -1) {
+                // Correct Answer!
+                revealAnswerSlot(matchIndex);
+                AudioEngine.playCorrect();
+            } else {
+                // Wrong Answer!
+                triggerStrike();
+            }
+        }
+
+        function revealAnswerSlot(index) {
+            if (gameState.revealedAnswers[index]) return;
+
+            gameState.revealedAnswers[index] = true;
+            const ansData = bankSoal[gameState.currentRoundIndex].jawaban[index];
+
+            document.getElementById(`ans-text-${index}`).innerText = ansData.teks;
+            document.getElementById(`ans-pts-${index}`).innerText = ansData.poin;
+
+            const card = document.getElementById(`card-${index}`);
+            card.classList.add('flipped');
+
+            // Add points to current round pot
+            gameState.currentRoundPoints += ansData.poin;
+            document.getElementById('currentRoundPoints').innerText = gameState.currentRoundPoints;
+
+            // Check if all 5 revealed
+            if (gameState.revealedAnswers.every(item => item === true)) {
+                setTimeout(() => {
+                    awardRoundPoints();
+                }, 1000);
+            }
+        }
+
+        function triggerStrike() {
+            gameState.strikes += 1;
+            AudioEngine.playWrong();
+            showStrikeOverlay();
+            updateStrikesUI();
+
+            if (gameState.strikes >= 3) {
+                // Automatically pass turn after 3 strikes
+                setTimeout(() => {
+                    passTurn();
+                }, 1200);
+            }
+        }
+
+        function addManualStrike() {
+            triggerStrike();
+        }
+
+        function showStrikeOverlay() {
+            const overlay = document.getElementById('overlayStrike');
+            overlay.classList.remove('opacity-0');
+            overlay.classList.add('opacity-100');
+
+            setTimeout(() => {
+                overlay.classList.remove('opacity-100');
+                overlay.classList.add('opacity-0');
+            }, 800);
+        }
+
+        function updateStrikesUI() {
+            for (let i = 1; i <= 3; i++) {
+                const el = document.getElementById(`strike-${i}`);
+                if (i <= gameState.strikes) {
+                    el.classList.remove('bg-slate-800', 'text-slate-600', 'border-slate-700');
+                    el.classList.add('bg-rose-600', 'text-white', 'border-rose-400', 'shadow-lg');
+                } else {
+                    el.classList.remove('bg-rose-600', 'text-white', 'border-rose-400', 'shadow-lg');
+                    el.classList.add('bg-slate-800', 'text-slate-600', 'border-slate-700');
+                }
+            }
+        }
+
+        function revealAllAnswers() {
+            const questionData = bankSoal[gameState.currentRoundIndex];
+            for (let i = 0; i < questionData.jawaban.length; i++) {
+                if (!gameState.revealedAnswers[i]) {
+                    revealAnswerSlot(i);
+                }
+            }
+            AudioEngine.playFlip();
+        }
+
+        function awardRoundPoints() {
+            if (gameState.activeTeam === 'A') {
+                gameState.teamA.score += gameState.currentRoundPoints;
+            } else {
+                gameState.teamB.score += gameState.currentRoundPoints;
+            }
+
+            document.getElementById('scoreTeamA').innerText = gameState.teamA.score;
+            document.getElementById('scoreTeamB').innerText = gameState.teamB.score;
+
+            AudioEngine.playVictory();
+
+            // Move to next round
+            setTimeout(() => {
+                if (gameState.currentRoundIndex + 1 < bankSoal.length) {
+                    loadRound(gameState.currentRoundIndex + 1);
+                } else {
+                    endGame();
+                }
+            }, 1200);
+        }
+
+        // ==========================================
+        // 5. GAME CONCLUSION & RESTART
+        // ==========================================
+        function endGame() {
+            document.getElementById('screenGame').classList.add('hidden');
+            document.getElementById('screenGame').classList.remove('flex');
+            document.getElementById('screenFinal').classList.remove('hidden');
+
+            const teamA = gameState.teamA;
+            const teamB = gameState.teamB;
+
+            document.getElementById('finalTeamAName').innerText = teamA.name;
+            document.getElementById('finalTeamAScore').innerText = teamA.score;
+            document.getElementById('finalTeamBName').innerText = teamB.name;
+            document.getElementById('finalTeamBScore').innerText = teamB.score;
+
+            let winnerMsg = "";
+            if (teamA.score > teamB.score) {
+                winnerMsg = `🎉 SELAMAT! ${teamA.name.toUpperCase()} MENANG! 🎉`;
+            } else if (teamB.score > teamA.score) {
+                winnerMsg = `🎉 SELAMAT! ${teamB.name.toUpperCase()} MENANG! 🎉`;
+            } else {
+                winnerMsg = "🤝 HASIL SERI! KEDUA TIM HEBAT! 🤝";
+            }
+            document.getElementById('winnerText').innerText = winnerMsg;
+
+            // Trigger Confetti
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 150,
+                    spread: 80,
+                    origin: { y: 0.6 }
+                });
+            }
+            AudioEngine.playVictory();
+        }
+
+        function restartGame() {
+            document.getElementById('screenFinal').classList.add('hidden');
+            document.getElementById('screenSetup').classList.remove('hidden');
+        }
+
+        function confirmReset() {
+            if (confirm("Apakah Anda yakin ingin mengulang permainan dari awal?")) {
+                restartGame();
+            }
+        }
+    </script>
+</body>
+</html>
